@@ -1,9 +1,13 @@
 import { FaUsers, FaHandHoldingUsd, FaTint } from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import PageTitle from "../../components/PageTitle";
+import { AuthContext } from "../../providers/AuthProvider";
+import useRole from "../../hooks/useRole";
 
-const AdminDashboard = ({ user, role, stats }) => {
+const AdminDashboard = ({ stats }) => {
+  const { user } = useContext(AuthContext);
+  const { role } = useRole();
   const axiosSecure = useAxiosSecure();
   const [users, setUsers] = useState([]);
   const [request, setRequest] = useState([]);
