@@ -76,13 +76,13 @@ const AmbulanceDirectory = () => {
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-rose-500">
+          <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">
             Emergency Ambulance Service
           </p>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900">
+          <h2 className="text-3xl sm:text-4xl font-black text-white">
             Division-wise Verified Ambulances
           </h2>
-          <p className="text-slate-600 max-w-2xl mt-2">
+          <p className="text-slate-400 max-w-2xl mt-2">
             GPS-enhanced routing prioritizes the closest verified ambulance provider. Use SOS to alert the crew instantly.
           </p>
         </div>
@@ -91,7 +91,7 @@ const AmbulanceDirectory = () => {
           <select
             value={division}
             onChange={(e) => setDivision(e.target.value)}
-            className="border border-rose-200 rounded-xl px-4 py-3 bg-white text-sm font-semibold"
+            className="border border-slate-700 rounded-xl px-4 py-3 bg-slate-800 text-gray-200 text-sm font-bold focus:ring-2 focus:ring-slate-600 outline-none"
           >
             {divisions.map((item) => (
               <option key={item} value={item}>
@@ -114,7 +114,7 @@ const AmbulanceDirectory = () => {
                 );
               }
             }}
-            className="px-4 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold shadow-lg hover:shadow-rose-200/80 transition-all"
+            className="px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold shadow-lg hover:shadow-slate-900/40 hover:bg-slate-700 transition-all flex items-center gap-2"
           >
             GPS Locate 🚑
           </button>
@@ -122,7 +122,7 @@ const AmbulanceDirectory = () => {
       </div>
 
       {geoAccessDenied && (
-        <div className="p-4 border border-amber-200 bg-amber-50 rounded-2xl text-amber-700 text-sm font-medium">
+        <div className="p-4 border border-amber-900/50 bg-amber-950/30 rounded-2xl text-amber-500 text-sm font-medium">
           We could not access your GPS location. Select a division manually or enable location access for auto-detection.
         </div>
       )}
@@ -133,12 +133,12 @@ const AmbulanceDirectory = () => {
           return (
             <article
               key={provider.name}
-              className={`relative glass border rounded-2xl p-6 flex flex-col gap-4 shadow-lg transition-transform ${
-                isHighlighted ? "border-red-500 scale-[1.02]" : "border-rose-100"
+              className={`relative bg-slate-900/40 backdrop-blur-sm border rounded-2xl p-6 flex flex-col gap-4 shadow-lg transition-transform ${
+                isHighlighted ? "border-slate-600 scale-[1.02] shadow-slate-900/20" : "border-slate-800 hover:border-slate-700"
               }`}
             >
               {provider.verified && (
-                <span className="absolute top-4 right-4 text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-3 py-1">
+                <span className="absolute top-4 right-4 text-xs font-bold text-slate-400 bg-slate-800/50 rounded-full px-3 py-1 border border-slate-700">
                   Verified
                 </span>
               )}
@@ -146,15 +146,15 @@ const AmbulanceDirectory = () => {
                 <p className="text-xs uppercase tracking-widest text-slate-500">
                   {provider.division}
                 </p>
-                <h3 className="text-2xl font-bold text-slate-900">{provider.name}</h3>
+                <h3 className="text-2xl font-bold text-white">{provider.name}</h3>
                 <p className="text-sm text-slate-500">
                   ETA {provider.etaMinutes} min · {provider.status.toUpperCase()}
                 </p>
               </div>
-              <div className="space-y-2 text-sm text-slate-600">
+              <div className="space-y-2 text-sm text-slate-400">
                 <p>
                   Hotline:{" "}
-                  <a href={`tel:${provider.hotline}`} className="font-semibold text-rose-600">
+                  <a href={`tel:${provider.hotline}`} className="font-semibold text-slate-300 hover:text-white">
                     {provider.hotline}
                   </a>
                 </p>
@@ -162,7 +162,7 @@ const AmbulanceDirectory = () => {
                 {userLocation && (
                   <p>
                     Distance:{" "}
-                    <span className="font-semibold">
+                    <span className="font-semibold text-gray-300">
                       {haversineKm(userLocation, provider.gps)} km
                     </span>
                   </p>
@@ -170,7 +170,7 @@ const AmbulanceDirectory = () => {
               </div>
               <button
                 onClick={() => handleSOS(provider)}
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold py-3 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold py-3 hover:bg-slate-700 hover:text-white hover:shadow-lg transition-all"
               >
                 One-click SOS
               </button>

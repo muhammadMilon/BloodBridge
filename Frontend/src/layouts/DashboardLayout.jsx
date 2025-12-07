@@ -1,21 +1,13 @@
 // DashboardLayout.jsx
-import { Outlet } from "react-router";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
 import { HelmetProvider } from "react-helmet-async";
-import useRole from "../hooks/useRole";
-import Loader from "../components/Loader";
+import { Outlet } from "react-router";
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
 
 const DashboardLayout = () => {
-  const { loading } = useRole();
+  // Removed blocking useRole loader to allow layout to render immediately
+  // Individual components handle their own data/role loading states
 
-  if (loading) {
-    return (
-      <HelmetProvider>
-        <Loader label="Loading dashboard..." full={true} />
-      </HelmetProvider>
-    );
-  }
 
   return (
     <HelmetProvider>

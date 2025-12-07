@@ -1,13 +1,30 @@
 import { useContext, useState } from "react";
 import { CgMenuMotion } from "react-icons/cg";
-import { RiMenuAddLine } from "react-icons/ri";
 import { FiChevronDown } from "react-icons/fi";
+import { RiMenuAddLine } from "react-icons/ri";
 import { Link, NavLink } from "react-router";
+import useCurrentUser from "../hooks/useCurrentUser";
+import useRole from "../hooks/useRole";
 import { AuthContext } from "../providers/AuthProvider";
 
 const Header = () => {
   const { user, logOut } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { role } = useRole();
+  const { currentUser } = useCurrentUser();
+  
+  // Get profile picture from MongoDB (currentUser.image) or fallback to Firebase (user.photoURL)
+  const profilePicture = currentUser?.image || user?.photoURL || "";
+
+  // Get dashboard path based on role
+  const getDashboardPath = () => {
+    if (role === "admin") return "/admindashboard";
+    if (role === "donor") return "/donordashboard";
+    if (role === "receiver") return "/recipientdashboard";
+    return "/dashboard";
+  };
+
+  const dashboardPath = getDashboardPath();
 
   const menu = [
     { name: "Home", path: "/" },
@@ -19,18 +36,23 @@ const Header = () => {
 
   const handleNavLinkClick = () => setIsMenuOpen(false);
 
+  const logoSrc = "/Logo.png";
+
   return (
-    <nav className="sticky top-0 z-50 bg-nav shadow-nav border-b border-border">
+    <nav className="sticky top-0 z-50 bg-slate-950/90 shadow-lg border-b border-slate-800 backdrop-blur-xl">
       {/* Main Navigation */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <span className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-red-600 to-rose-700 bg-clip-text text-transparent tracking-tight group-hover:scale-105 transform transition-transform duration-200">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <img
+              src={logoSrc}
+              alt="BloodBridge logo"
+              className="w-10 h-10 lg:w-12 lg:h-12 object-contain drop-shadow-[0_0_15px_rgba(255,51,102,0.6)] transition-transform duration-300 group-hover:scale-105"
+              style={{ backgroundColor: 'transparent', mixBlendMode: 'normal' }}
+            />
+            <span className="text-xl lg:text-2xl font-black text-gray-100 tracking-tight group-hover:text-rose-500 transition-colors">
               BloodBridge
-            </span>
-            <span className="text-2xl group-hover:rotate-180 transform transition-transform duration-200">
-              🩸
             </span>
           </Link>
 
@@ -44,8 +66,8 @@ const Header = () => {
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-lg font-medium text-sm xl:text-base transition-all duration-200 ${
                     isActive
-                      ? "bg-rose-100 text-highlighted shadow-sm"
-                      : "text-text hover:text-highlighted hover:bg-rose-50"
+                      ? "bg-slate-800 text-rose-500 shadow-sm border border-slate-700"
+                      : "text-gray-300 hover:text-white hover:bg-slate-800"
                   }`
                 }
               >
@@ -59,7 +81,7 @@ const Header = () => {
             {user && user.email ? (
               <div className="relative">
                 <div className="flex items-center space-x-3">
-                  {user.photoURL && (
+                  {profilePicture && (
                     <button
                       onClick={() => setIsMenuOpen((prev) => !prev)}
                       className="relative focus:outline-none"
@@ -67,15 +89,16 @@ const Header = () => {
                       aria-expanded={isMenuOpen}
                     >
                       <img
-                        src={user.photoURL}
-                        alt={user.displayName}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-border shadow-sm hover:border-rose-500 transition-colors duration-200"
-                        title={user.displayName}
+                        src={profilePicture}
+                        alt={user.displayName || currentUser?.name || "User"}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-slate-700 shadow-sm hover:border-rose-500 transition-colors duration-200"
+                        title={user.displayName || currentUser?.name || "User"}
+                        key={profilePicture} // Force re-render when image changes
                       />
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-cardBg border border-border shadow-sm flex items-center justify-center pointer-events-none">
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center pointer-events-none">
                         <FiChevronDown
-                          className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${
+                          className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${
                             isMenuOpen ? "rotate-180" : "rotate-0"
                           }`}
                           aria-hidden="true"
@@ -85,19 +108,29 @@ const Header = () => {
                   )}
                 </div>
 
+                {/* Role indicator (donor / receiver) */}
+                {role && (
+                  <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-800 text-xs font-semibold text-gray-300 border border-slate-700 whitespace-nowrap">
+                    Logged in as{" "}
+                    <span className="capitalize text-rose-400">
+                      {role === "receiver" ? "recipient" : role}
+                    </span>
+                  </div>
+                )}
+
                 {isMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-cardBg border border-border rounded-lg shadow-lg py-1 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-xl py-1 z-50"
                     role="menu"
                   >
                     <NavLink
-                      to="/dashboard"
+                      to={dashboardPath}
                       onClick={() => setIsMenuOpen(false)}
                       className={({ isActive }) =>
                         `block px-4 py-2 text-sm ${
                           isActive
-                            ? "text-highlighted bg-rose-50"
-                            : "text-text hover:text-highlighted hover:bg-rose-50"
+                            ? "text-rose-500 bg-slate-800"
+                            : "text-gray-300 hover:text-white hover:bg-slate-800"
                         }`
                       }
                       role="menuitem"
@@ -109,7 +142,7 @@ const Header = () => {
                         setIsMenuOpen(false);
                         logOut();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-highlighted hover:text-highlighted hover:bg-red-50"
+                      className="block w-full text-left px-4 py-2 text-sm text-rose-500 hover:text-rose-400 hover:bg-slate-800"
                       role="menuitem"
                     >
                       Logout
@@ -121,13 +154,13 @@ const Header = () => {
               <div className="flex items-center space-x-2">
                 <NavLink
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-text hover:text-highlighted hover:bg-rose-50 rounded-lg transition-all duration-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-200"
                 >
                   Login
                 </NavLink>
                 <NavLink
                   to="/registration"
-                  className="px-4 py-2 text-sm font-medium bg-cta text-btn-text rounded-lg hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="px-4 py-2 text-sm font-medium bg-rose-600 text-white rounded-lg hover:shadow-lg hover:bg-rose-700 transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   Register
                 </NavLink>
@@ -137,21 +170,22 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center space-x-3">
-            {user && user.photoURL && (
+            {user && profilePicture && (
               <div className="relative">
                 <img
-                  src={user.photoURL}
-                  alt={user.displayName}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-border shadow-sm"
-                  title={user.displayName}
+                  src={profilePicture}
+                  alt={user.displayName || currentUser?.name || "User"}
+                  className="w-9 h-9 rounded-full object-cover border-2 border-slate-700 shadow-sm"
+                  title={user.displayName || currentUser?.name || "User"}
+                  key={profilePicture} // Force re-render when image changes
                 />
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div>
               </div>
             )}
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg text-gray-700 hover:text-red-700 hover:bg-rose-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              className="p-2 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-slate-900"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? (
@@ -169,7 +203,7 @@ const Header = () => {
             isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="py-4 border-t border-border">
+          <div className="py-4 border-t border-slate-800 bg-slate-900 rounded-b-xl px-2">
             <div className="space-y-1">
               {menu.map((item) => (
                 <NavLink
@@ -179,8 +213,8 @@ const Header = () => {
                   className={({ isActive }) =>
                     `block px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-rose-100 text-highlighted border-l-4 border-red-500"
-                        : "text-text hover:text-highlighted hover:bg-rose-50"
+                        ? "bg-slate-800 text-rose-500 border-l-4 border-rose-500"
+                        : "text-gray-300 hover:text-white hover:bg-slate-800"
                     }`
                   }
                 >
@@ -189,13 +223,13 @@ const Header = () => {
               ))}
 
               {/* Mobile Auth Actions */}
-              <div className="pt-4 mt-4 border-t border-border space-y-2">
+              <div className="pt-4 mt-4 border-t border-slate-800 space-y-2">
                 {user && user.email ? (
                   <>
                     <NavLink
-                      to="/dashboard"
+                      to={dashboardPath}
                       onClick={handleNavLinkClick}
-                      className="block px-4 py-3 text-base font-medium text-text hover:text-highlighted hover:bg-rose-50 rounded-lg transition-all duration-200"
+                      className="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-200"
                     >
                       Dashboard
                     </NavLink>
@@ -204,7 +238,7 @@ const Header = () => {
                         logOut();
                         setIsMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-3 text-base font-medium text-highlighted hover:text-highlighted hover:bg-red-50 rounded-lg transition-all duration-200"
+                      className="block w-full text-left px-4 py-3 text-base font-medium text-rose-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all duration-200"
                     >
                       Logout
                     </button>
@@ -214,14 +248,14 @@ const Header = () => {
                     <NavLink
                       to="/login"
                       onClick={handleNavLinkClick}
-                      className="block px-4 py-3 text-base font-medium text-text hover:text-highlighted hover:bg-rose-50 rounded-lg transition-all duration-200"
+                      className="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-200"
                     >
                       Login
                     </NavLink>
                     <NavLink
                       to="/registration"
                       onClick={handleNavLinkClick}
-                      className="block px-4 py-3 text-base font-medium bg-cta text-btn-text rounded-lg text-center transition-all duration-200"
+                      className="block px-4 py-3 text-base font-medium bg-rose-600 text-white rounded-lg text-center transition-all duration-200"
                     >
                       Register
                     </NavLink>

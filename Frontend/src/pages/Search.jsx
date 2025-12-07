@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
-import useAxiosPublic from "../hooks/axiosPublic";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import PageTitle from "../components/PageTitle";
+import useAxiosPublic from "../hooks/axiosPublic";
 
 const Search = () => {
   const axiosPublic = useAxiosPublic();
@@ -23,12 +24,16 @@ const Search = () => {
   // Load districts and upazilas
   useEffect(() => {
     const fetchData = async () => {
-      const [districtRes, upazilaRes] = await Promise.all([
-        axios.get("/districts.json"),
-        axios.get("/upazilas.json"),
-      ]);
-      setDistricts(districtRes.data);
-      setUpazilas(upazilaRes.data);
+        try {
+            const [districtRes, upazilaRes] = await Promise.all([
+                axios.get("/districts.json"),
+                axios.get("/upazilas.json"),
+            ]);
+            setDistricts(districtRes.data);
+            setUpazilas(upazilaRes.data);
+        } catch (error) {
+            console.error("Failed to load location data", error);
+        }
     };
     fetchData();
   }, []);
@@ -108,224 +113,250 @@ const Search = () => {
   };
 
   const badgeForDonations = (count = 0) => {
-    if (count >= 5) return { label: "Gold", color: "bg-yellow-100 text-yellow-700" };
-    if (count >= 3) return { label: "Silver", color: "bg-gray-100 text-gray-700" };
-    if (count >= 1) return { label: "Bronze", color: "bg-amber-100 text-amber-700" };
+    if (count >= 5) return { label: "Gold", color: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" };
+    if (count >= 3) return { label: "Silver", color: "bg-slate-500/20 text-slate-300 border border-slate-500/30" };
+    if (count >= 1) return { label: "Bronze", color: "bg-orange-500/20 text-orange-400 border border-orange-500/30" };
     return null;
   };
 
   return (
-    <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="min-h-screen bg-slate-950 py-12 relative overflow-hidden">
       <PageTitle title={"Search"} />
-
-      <div className="text-center mb-8 sm:mb-12">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent mb-3">
-          Find a Blood Donor
-        </h1>
-        <p className="text-gray-600 text-sm sm:text-base">
-          Search for available blood donors in your area
-        </p>
+    
+        {/* Background Gradients */}
+      <div className="absolute inset-0 pointer-events-none">
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rose-900/10 rounded-full blur-3xl" />
+         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-800/20 rounded-full blur-3xl" />
       </div>
 
-      <form
-        onSubmit={handleSearch}
-        className="glass border-2 border-rose-200 rounded-2xl shadow-xl p-6 sm:p-8 mb-10 sm:mb-12"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          {/* Inputs will go here */}
-          {/* Blood Group */}
-          <select
-            name="bloodGroup"
-            value={formData.bloodGroup}
-            onChange={handleChange}
-            className="border-border border rounded-lg px-3 py-2.5 bg-white text-text text-sm sm:text-base focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
-          >
-            <option value="">Select Blood Group</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
 
-          {/* District */}
-          <select
-            name="district"
-            value={formData.district}
-            onChange={handleChange}
-            className="border-border border rounded-lg px-3 py-2.5 bg-white text-text text-sm sm:text-base focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
-          >
-            <option value="">Select District</option>
-            {districts.map((district) => (
-              <option key={district.id} value={district.name}>
-                {district.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Upazila */}
-          <select
-            name="upazila"
-            value={formData.upazila}
-            onChange={handleChange}
-            className="border-border border rounded-lg px-3 py-2.5 bg-white text-text text-sm sm:text-base focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!filteredUpazilas.length}
-          >
-            <option value="">Select Upazila</option>
-            {filteredUpazilas.map((u) => (
-              <option key={u.id} value={u.name}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Availability */}
-          <select
-            name="availability"
-            value={formData.availability}
-            onChange={handleChange}
-            className="border-border border rounded-lg px-3 py-2.5 bg-white text-text text-sm sm:text-base focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
-          >
-            <option value="">Availability</option>
-            <option value="available">Available Now</option>
-            <option value="resting">Resting</option>
-            <option value="medical-review">Medical Review</option>
-          </select>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      
+        <div className="text-center mb-12">
+            <motion.div
+             initial={{ opacity: 0, y: -20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-4">
+                <span className="text-gray-100">Find a </span>
+                <span className="bg-gradient-to-r from-rose-500 to-red-500 bg-clip-text text-transparent">
+                  Blood Donor
+                </span>
+              </h1>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Connect with local donors available in your area precisely when you need them.
+              </p>
+          </motion.div>
         </div>
 
-        {/* Search Button */}
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white rounded-xl px-6 py-4 text-base font-bold shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
+        <motion.form
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          onSubmit={handleSearch}
+          className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 mb-16 max-w-5xl mx-auto"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          Search Donors
-        </button>
-      </form>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            {/* Blood Group */}
+            <div className="relative group">
+                <select
+                name="bloodGroup"
+                value={formData.bloodGroup}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border-slate-700 text-gray-200 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer hover:bg-slate-750"
+                >
+                <option value="" className="bg-slate-800 text-gray-400">Blood Group</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                </select>
+            </div>
 
-      {/* Search Result */}
-      {searchResult.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {searchResult.map((donor) => {
-            const history = donorHistory[donor.email] || {};
-            const badge = badgeForDonations(history.totalDonations);
-            const verified = history.totalDonations > 0;
-            return (
-            <div
-              key={donor._id}
-              className="group relative glass border-2 border-rose-200 rounded-2xl shadow-lg hover:shadow-2xl p-6 text-center transition-all duration-300 hover:-translate-y-2 card-hover overflow-hidden"
-            >
-              {/* Gradient overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-600/10 to-red-600/10 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-300"></div>
+            {/* District */}
+            <div className="relative">
+                <select
+                name="district"
+                value={formData.district}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border-slate-700 text-gray-200 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer hover:bg-slate-750"
+                >
+                <option value="" className="bg-slate-800 text-gray-400">District</option>
+                {districts.map((district) => (
+                    <option key={district.id} value={district.name}>
+                    {district.name}
+                    </option>
+                ))}
+                </select>
+            </div>
 
-              <div className="relative z-10">
-                <div className="relative inline-block mb-4">
-                  <img
-                    src={donor.image}
-                    alt={donor.name}
-                    className="w-24 h-24 mx-auto rounded-full object-cover border-4 border-white shadow-xl group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-rose-600 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                    {donor.bloodGroup}
+            {/* Upazila */}
+            <div className="relative">
+                <select
+                name="upazila"
+                value={formData.upazila}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border-slate-700 text-gray-200 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer hover:bg-slate-750 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!filteredUpazilas.length}
+                >
+                <option value="" className="bg-slate-800 text-gray-400">Upazila</option>
+                {filteredUpazilas.map((u) => (
+                    <option key={u.id} value={u.name}>
+                    {u.name}
+                    </option>
+                ))}
+                </select>
+            </div>
+
+            {/* Availability */}
+            <div className="relative">
+                <select
+                name="availability"
+                value={formData.availability}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border-slate-700 text-gray-200 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer hover:bg-slate-750"
+                >
+                <option value="" className="bg-slate-800 text-gray-400">Availability</option>
+                <option value="available">Available Now</option>
+                <option value="resting">Resting</option>
+                <option value="medical-review">Medical Review</option>
+                </select>
+            </div>
+
+             {/* Search Button */}
+             <button
+                type="submit"
+                className="w-full bg-slate-800 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-600 rounded-xl px-6 py-3 font-bold shadow-lg shadow-rose-900/20 hover:shadow-rose-500/40 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                </svg>
+                Search
+            </button>
+          </div>
+        </motion.form>
+
+        {/* Search Result */}
+        {searchResult.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {searchResult.map((donor, index) => {
+              const history = donorHistory[donor.email] || {};
+              const badge = badgeForDonations(history.totalDonations);
+              const verified = history.totalDonations > 0;
+              return (
+              <motion.div
+                key={donor._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="group relative bg-slate-900/60 backdrop-blur-md border border-slate-800 hover:border-rose-500/50 rounded-2xl p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-900/10 overflow-hidden"
+              >
+                <div className="relative z-10">
+                  <div className="relative inline-block mb-4">
+                    <img
+                      src={donor.image}
+                      alt={donor.name}
+                      className="w-24 h-24 mx-auto rounded-full object-cover border-4 border-slate-800 shadow-xl group-hover:scale-110 transition-transform duration-300 group-hover:border-rose-500/30"
+                    />
+                    <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-rose-600 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-slate-900">
+                      {donor.bloodGroup}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h3 className="font-bold text-lg text-gray-100 line-clamp-1 group-hover:text-rose-400 transition-colors">
+                      {donor.name}
+                    </h3>
+                    {verified && (
+                      <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue-500/20 text-blue-400 text-xs" title="Verified Donor">
+                         ✓
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-center gap-1 text-sm text-gray-400 mb-3">
+                    <span className="line-clamp-1">
+                       {donor.upazila}, {donor.district}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-500 mb-4">
+                    <span className="px-2 py-1 rounded-full bg-slate-800 border border-slate-700 capitalize text-gray-300">
+                      {donor.availabilityStatus || "available"}
+                    </span>
+                    {badge && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-center gap-1 text-xs text-rose-400/80 break-all p-2 bg-rose-500/5 rounded-lg border border-rose-500/10 hover:bg-rose-500/10 transition-colors cursor-pointer">
+                    <span className="line-clamp-1">{donor.email}</span>
                   </div>
                 </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+             donors.length > 0 && (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-20"
+                >
+                    <p className="text-gray-500 text-lg">No donors found matching your criteria.</p>
+                </motion.div>
+             )
+        )}
+        
+        {/* Empty State / Initial State Animations */}
+        {searchResult.length === 0 && (
+            <div className="flex justify-center items-center py-20 relative h-64">
+                 <motion.div
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                    className="text-8xl absolute"
+                    style={{ opacity: 0.2, filter: 'blur(2px)' }}
+                 >
+                    🩸
+                 </motion.div>
+                 
+                  <motion.div
+                    animate={{ x: [-50, 50, -50], y: [20, -20, 20] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    className="text-6xl absolute top-10 left-1/4 opacity-10"
+                 >
+                    🔍
+                 </motion.div>
 
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <h3 className="font-bold text-lg text-text line-clamp-1 group-hover:text-rose-600 transition-colors">
-                    {donor.name}
-                  </h3>
-                  {verified && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
-                      Verified
-                    </span>
-                  )}
-                </div>
+                  <motion.div
+                    animate={{ x: [50, -50, 50], y: [-20, 20, -20] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+                    className="text-6xl absolute bottom-10 right-1/4 opacity-10"
+                 >
+                    🏥
+                 </motion.div>
+            </div>
+        )}
 
-                <div className="flex items-center justify-center gap-1 text-sm text-gray-600 mb-3">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <span className="line-clamp-1">
-                    {donor.upazila}, {donor.district}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mb-3">
-                  <span className="px-2 py-1 rounded-full bg-slate-100 capitalize">
-                    {donor.availabilityStatus || "available"}
-                  </span>
-                  {badge && (
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${badge.color}`}>
-                      {badge.label} • {history.totalDonations} donations
-                    </span>
-                  )}
-                </div>
-
-                {history.lastDonationDate && (
-                  <p className="text-xs text-slate-500 mb-2">
-                    Last donation: {new Date(history.lastDonationDate).toLocaleDateString()}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-center gap-1 text-xs text-blue-600 break-all">
-                  <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="line-clamp-1">{donor.email}</span>
-                </div>
-              </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <p className="text-center text-text">
-          {donors.length > 0
-            ? "No donor found!"
-            : "Please search to find donors."}
-        </p>
-      )}
+      </div>
     </div>
   );
 };

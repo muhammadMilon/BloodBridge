@@ -1,9 +1,15 @@
-import { Link } from "react-router";
-import animation from "../assets/blood donner.json";
-import Lottie from "lottie-react";
+import { motion } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../providers/AuthProvider";
+import { Link } from "react-router";
 import useAxiosPublic from "../hooks/axiosPublic";
+import { AuthContext } from "../providers/AuthProvider";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const Banner = () => {
   const { user } = useContext(AuthContext);
@@ -22,141 +28,135 @@ const Banner = () => {
       .catch((err) => console.error("Error fetching donors:", err));
   }, []);
 
+  const pages = [
+    {
+      title1: "Be Someone’s",
+      title2: "Hope & Hero",
+      text: "Donate blood and save lives today.",
+      link: "/search",
+      btn: "Find a Donor",
+    },
+    {
+      title1: "Know the",
+      title2: "Donation Process",
+      text: "Learn step-by-step how blood donation works.",
+      link: "/donation-process",
+      btn: "Learn More",
+    },
+    {
+      title1: "Discover",
+      title2: "Blood Groups",
+      text: "Find compatibility rules for safe transfusion.",
+      link: "/blood-groups",
+      btn: "Explore Groups",
+    },
+    {
+      title1: "Become a",
+      title2: "Life Saver",
+      text: "Join our donor community today!",
+      link: "/donor-registration",
+      btn: "Register Now",
+    },
+  ];
+
   return (
-    <section className="relative overflow-hidden min-h-screen flex items-center">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-red-50"></div>
+    <section className="relative overflow-hidden min-h-screen flex items-center pt-16">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-red-50" />
 
-      {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="absolute top-1/4 left-10 w-96 h-96 bg-gradient-to-r from-rose-400 to-red-400 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-1/4 right-10 w-96 h-96 bg-gradient-to-r from-red-400 to-rose-600 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-pink-300 to-rose-400 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"
-          style={{ animationDelay: "4s" }}
-        ></div>
+      {/* Animated blobs */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none">
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute top-1/4 left-10 w-96 h-96 bg-gradient-to-r from-rose-400 to-red-400 rounded-full mix-blend-multiply filter blur-3xl"
+        />
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 lg:py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
-          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-            <div className="inline-block">
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-100 to-red-100 rounded-full text-xs sm:text-sm font-semibold text-highlighted backdrop-blur-sm border border-rose-200">
-                🩸 Save Lives Today
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight">
-              <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                Be Someone's
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 bg-clip-text text-transparent">
-                Hope & Hero
-              </span>
-            </h1>
-
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Join our community of lifesavers. Your single donation can save up
-              to three lives. Every drop makes a difference.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-4">
-              <Link
-                to="/search"
-                className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-bold rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  Find a Donor
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
-
-              {!user && (
-                <Link
-                  to="/registration"
-                  className="group px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-rose-600 text-rose-600 font-bold rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl hover:bg-rose-50 transform hover:-translate-y-1 transition-all duration-300"
+      {/* Swiper */}
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay]}
+        navigation
+        pagination={{ clickable: true }}
+        autoplay={{ delay: 4000 }}
+        loop={true}
+        className="w-full"
+      >
+        {pages.map((page, i) => (
+          <SwiperSlide key={i}>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 lg:py-20">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                {/* Left text */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="space-y-6 sm:space-y-8 text-center lg:text-left"
                 >
-                  <span className="flex items-center justify-center gap-2 text-sm sm:text-base">
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Register as Donor
-                  </span>
-                </Link>
-              )}
-            </div>
+                  <h1 className="text-4xl md:text-5xl font-black">
+                    <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                      {page.title1}
+                    </span>
+                    <br />
+                    <span className="bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 bg-clip-text text-transparent">
+                      {page.title2}
+                    </span>
+                  </h1>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-8 max-w-lg mx-auto lg:mx-0">
-              <div className="text-center lg:text-left p-3 sm:p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-rose-100">
-                <div className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
-                  {activeDonors}+
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-gray-600 font-medium mt-1">
-                  Active Donors
-                </div>
-              </div>
-              <div className="text-center lg:text-left p-3 sm:p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-rose-100">
-                <div className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
-                  5000+
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-gray-600 font-medium mt-1">
-                  Lives Saved
-                </div>
-              </div>
-              <div className="text-center lg:text-left p-3 sm:p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-rose-100">
-                <div className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
-                  24/7
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-gray-600 font-medium mt-1">
-                  Support
-                </div>
-              </div>
-            </div>
-          </div>
+                  <p className="text-lg text-gray-600">
+                    {page.text}
+                  </p>
 
-          {/* Right animation */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[300px] sm:max-w-[400px] md:max-w-[450px] lg:max-w-[550px]">
-              <div className="absolute inset-0 bg-gradient-to-r from-rose-400 to-red-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-              <Lottie
-                animationData={animation}
-                loop={true}
-                className="relative z-10"
-              />
+                  <Link
+                    to={page.link}
+                    className="px-8 py-4 bg-gradient-to-r from-rose-600 to-red-600 text-white font-bold rounded-xl shadow-lg"
+                  >
+                    {page.btn}
+                  </Link>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4 pt-8 max-w-lg mx-auto lg:mx-0">
+                    <div className="text-center p-3 bg-white/50 rounded-xl border">
+                      <div className="text-3xl font-black text-rose-600">
+                        {activeDonors}+
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Active Donors
+                      </div>
+                    </div>
+                    <div className="text-center p-3 bg-white/50 rounded-xl border">
+                      <div className="text-3xl font-black text-rose-600">
+                        5000+
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Lives Saved
+                      </div>
+                    </div>
+                    <div className="text-center p-3 bg-white/50 rounded-xl border">
+                      <div className="text-3xl font-black text-rose-600">
+                        24/7
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Support
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Right animation */}
+                <div className="flex justify-center lg:justify-end">
+                  <motion.div
+                    animate={{ y: [-10, 10, -10] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                  >
+                    <div className="text-[150px]">🩸</div>
+                  </motion.div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </section>
   );
 };
