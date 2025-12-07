@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
-import useAxiosPublic from "../../hooks/axiosPublic";
+import Swal from "sweetalert2";
+import Loader from "../../components/Loader";
 import PageTitle from "../../components/PageTitle";
 import WelcomeMsg from "../../components/WelcomeMsg";
-import Loader from "../../components/Loader";
-import Swal from "sweetalert2";
+import useAxiosPublic from "../../hooks/axiosPublic";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { AuthContext } from "../../providers/AuthProvider";
+import useRole from "../../hooks/useRole";
 
-const ReceiverDashboard = ({ user, role }) => {
+const ReceiverDashboard = () => {
+  const { user } = useContext(AuthContext);
+  const { role } = useRole();
   const axiosSecure = useAxiosSecure();
   const axiosPublic = useAxiosPublic();
   const [requests, setRequests] = useState([]);
@@ -82,6 +86,44 @@ const ReceiverDashboard = ({ user, role }) => {
     <div className="p-4 sm:p-6 lg:p-8">
       <PageTitle title={"Recipient Dashboard"} />
       <WelcomeMsg />
+
+      {/* Recipient profile summary */}
+      {user && (
+        <div className="glass border border-rose-100 rounded-2xl p-4 mt-4 flex flex-col sm:flex-row items-center gap-4">
+          <img
+            src={
+              user.image ||
+              user.photoURL ||
+              "https://via.placeholder.com/96?text=No+Image"
+            }
+            alt={user.name || user.displayName || "Recipient"}
+            className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
+          />
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className="text-xl font-bold text-slate-900">
+              {user.name || user.displayName || "Recipient"}
+            </h3>
+            <p className="text-sm text-slate-600">{user.email}</p>
+            <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-3 text-sm">
+              <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold">
+                Blood Group: {user.bloodGroup || "Not set"}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-slate-50 text-slate-700">
+                Location:{" "}
+                {user.upazila && user.district
+                  ? `${user.upazila}, ${user.district}`
+                  : "Not set"}
+              </span>
+            </div>
+            <Link
+              to="/dashboard/profile"
+              className="inline-flex items-center gap-2 text-rose-600 text-sm font-semibold mt-2 hover:text-rose-700 transition-colors"
+            >
+              Edit profile & update photo →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
