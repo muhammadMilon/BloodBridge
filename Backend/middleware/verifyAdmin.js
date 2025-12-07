@@ -1,15 +1,20 @@
-const { getCollections } = require("../config/database");
+const requireAuth = require("./auth");
 
 const verifyAdmin = async (req, res, next) => {
-  const { users } = getCollections();
-  const user = await users.findOne({
-    email: req.firebaseUser.email,
-  });
+  // First check if user is authenticated
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized: Please log in" });
+  }
 
-  if (user && user.role === "admin") {
+  // Check if user is admin
+  if (req.user.role === "admin") {
     next();
   } else {
-    res.status(403).send({ msg: "unauthorized" });
+    return res.status(403).json({ 
+      message: "Forbidden: Admin access required",
+      authenticated: true,
+      role: req.user.role 
+    });
   }
 };
 

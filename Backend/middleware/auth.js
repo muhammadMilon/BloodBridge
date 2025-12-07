@@ -1,24 +1,15 @@
-const admin = require("../config/firebase");
-
-const verifyFirebaseToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
-  }
-
-  const idToken = authHeader.split(" ")[1];
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    console.log("🚀 ~ verifyFirebaseToken ~ decodedToken:", decodedToken);
-    req.firebaseUser = decodedToken;
+// Session-based authentication middleware
+const requireAuth = (req, res, next) => {
+  if (req.session && req.session.user) {
+    // User is authenticated, attach user to request for convenience
+    req.user = req.session.user;
     next();
-  } catch (error) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized: Invalid token from catch" });
+  } else {
+    return res.status(401).json({ 
+      message: "Unauthorized: Please log in",
+      authenticated: false 
+    });
   }
 };
 
-module.exports = verifyFirebaseToken;
+module.exports = requireAuth;
