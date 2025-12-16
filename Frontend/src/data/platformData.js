@@ -10,6 +10,16 @@ export const ambulanceDirectory = [
     status: "online",
   },
   {
+    division: "Dhaka",
+    name: "Dhaka Emergency Care",
+    hotline: "01777-112233",
+    etaMinutes: 15,
+    verified: true,
+    coverage: ["Dhanmondi", "Gulshan", "Banani"],
+    gps: { lat: 23.7500, lng: 90.4000 },
+    status: "online",
+  },
+  {
     division: "Chattogram",
     name: "Chattogram TraumaLink",
     hotline: "01888-112233",
@@ -37,6 +47,46 @@ export const ambulanceDirectory = [
     verified: true,
     coverage: ["Sylhet", "Habiganj", "Moulvibazar"],
     gps: { lat: 24.8949, lng: 91.8687 },
+    status: "online",
+  },
+  {
+    division: "Khulna",
+    name: "Khulna Emergency Response",
+    hotline: "01988-445566",
+    etaMinutes: 22,
+    verified: true,
+    coverage: ["Khulna", "Jessore", "Jhenaidah"],
+    gps: { lat: 22.8088, lng: 89.2467 },
+    status: "online",
+  },
+  {
+    division: "Barishal",
+    name: "Barishal Coastal Ambulance",
+    hotline: "01877-991122",
+    etaMinutes: 28,
+    verified: true,
+    coverage: ["Barishal", "Pirojpur", "Jhalokathi"],
+    gps: { lat: 22.7010, lng: 90.3535 },
+    status: "on-call",
+  },
+  {
+    division: "Rangpur",
+    name: "Rangpur Northern EMS",
+    hotline: "01766-778899",
+    etaMinutes: 30,
+    verified: true,
+    coverage: ["Rangpur", "Dinajpur", "Gaibandha"],
+    gps: { lat: 25.7439, lng: 89.2752 },
+    status: "online",
+  },
+  {
+    division: "Mymensingh",
+    name: "Mymensingh Central Medical",
+    hotline: "01955-334455",
+    etaMinutes: 25,
+    verified: true,
+    coverage: ["Mymensingh", "Jamalpur", "Netrokona"],
+    gps: { lat: 24.7471, lng: 90.4203 },
     status: "online",
   },
 ];
@@ -69,6 +119,7 @@ export const clinicDirectory = [
 ];
 
 export const hematologyDoctors = [
+  // Dhaka (2)
   {
     division: "Dhaka",
     name: "Dr. Fahmida Noor",
@@ -78,6 +129,16 @@ export const hematologyDoctors = [
     verified: true,
   },
   {
+    division: "Dhaka",
+    name: "Dr. A. B. M. Yunus",
+    hospital: "Bangabandhu Sheikh Mujib Medical University",
+    specialties: ["Bone Marrow Transplant", "Anemia"],
+    contact: "01711-223344",
+    verified: true,
+  },
+
+  // Chattogram (1)
+  {
     division: "Chattogram",
     name: "Dr. S. M. Anik Rahman",
     hospital: "Imperial Hospital",
@@ -85,13 +146,65 @@ export const hematologyDoctors = [
     contact: "01611-335577",
     verified: true,
   },
+
+  // Rajshahi (1)
+  {
+    division: "Rajshahi",
+    name: "Dr. Md. Mizanur Rahman",
+    hospital: "Rajshahi Medical College Hospital",
+    specialties: ["Hemato-Oncology", "Anemia"],
+    contact: "01733-889900",
+    verified: true,
+  },
+
+  // Khulna (1)
+  {
+    division: "Khulna",
+    name: "Dr. Sheikh Md. Bodiuzzaman",
+    hospital: "Khulna City Medical College",
+    specialties: ["Blood Cancer", "Bleeding Disorders"],
+    contact: "01944-778899",
+    verified: true,
+  },
+
+  // Barishal (1)
+  {
+    division: "Barishal",
+    name: "Dr. Ashraful Islam",
+    hospital: "Sher-e-Bangla Medical College",
+    specialties: ["Hematology", "Transfusion Medicine"],
+    contact: "01788-112233",
+    verified: true,
+  },
+
+  // Sylhet (1)
   {
     division: "Sylhet",
     name: "Dr. Nusrat Ahmed",
     hospital: "Osmani Medical College",
     specialties: ["Platelet Disorders", "Pediatric Hematology"],
     contact: "01788-992211",
-    verified: false,
+    verified: true,
+  },
+
+  // Rangpur (1)
+  {
+    division: "Rangpur",
+    name: "Dr. Md. Abdul Motin",
+    hospital: "Rangpur Medical College",
+    specialties: ["Hemato-Oncology", "Blood Transfusion"],
+    contact: "01755-667788",
+    verified: true,
+  },
+
+  // Mymensingh (1)
+  {
+    division: "Mymensingh",
+    name: "Dr. Md. Rafiqul Islam",
+    hospital: "Mymensingh Medical College",
+    specialties: ["Hematology", "Bone Marrow Failure"],
+    contact: "01966-778899",
+    verified: true,
   },
 ];
 
@@ -105,11 +218,27 @@ export const ngoDirectory = [
     verified: true,
   },
   {
+    division: "Chattogram",
+    name: "Chattogram Blood Friends",
+    type: "NGO",
+    contact: "01822-556677",
+    email: "ctg@bloodfriends.org",
+    verified: true,
+  },
+  {
     division: "Rajshahi",
     name: "North Bengal Life Savers",
     type: "NGO",
     contact: "01744-556677",
     email: "support@nbls.org",
+    verified: true,
+  },
+  {
+    division: "Khulna",
+    name: "Khulna Sheba Sangha",
+    type: "NGO",
+    contact: "01933-445566",
+    email: "info@sheba.org",
     verified: true,
   },
   {
@@ -119,6 +248,30 @@ export const ngoDirectory = [
     contact: "01900-889977",
     email: "coastalcare@ngo.org",
     verified: false,
+  },
+  {
+    division: "Sylhet",
+    name: "Jalalabad Blood Bank",
+    type: "Blood Bank",
+    contact: "01755-889900",
+    email: "contact@jalalabadblood.com",
+    verified: true,
+  },
+  {
+    division: "Rangpur",
+    name: "Rangpur Rokto Sheba",
+    type: "NGO",
+    contact: "01766-112233",
+    email: "volunteer@rangpurrokto.org",
+    verified: true,
+  },
+  {
+    division: "Mymensingh",
+    name: "Brahmaputra Blood Bank",
+    type: "Blood Bank",
+    contact: "01977-223344",
+    email: "service@brahmaputra.org",
+    verified: true,
   },
 ];
 

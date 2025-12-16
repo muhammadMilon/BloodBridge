@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { FaWhatsapp } from "react-icons/fa";
-import { Outlet, useLocation } from "react-router";
+import { FaRobot } from "react-icons/fa";
+import { Link, Outlet, useLocation } from "react-router";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 
@@ -21,16 +21,14 @@ const RootLayout = () => {
             <Outlet></Outlet>
           </main>
           {!shouldHideFooter && <Footer />}
-          <a
-            href="https://wa.me/+8801409268870"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/blood-helper"
             className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-900/40 hover:bg-emerald-400 hover:scale-110 transition-all duration-300 flex items-center justify-center animate-[bounce_3s_infinite] group"
-            title="Chat on WhatsApp"
+            title="Blood Helper AI"
           >
-            <FaWhatsapp className="text-3xl" />
-            <span className="absolute right-full mr-3 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-slate-700">Need Help? Chat!</span>
-          </a>
+            <FaRobot className="text-3xl" />
+            <span className="absolute right-full mr-3 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-slate-700">Need Help? Ask AI!</span>
+          </Link>
         </div>
       </QueryClientProvider>
     </HelmetProvider>

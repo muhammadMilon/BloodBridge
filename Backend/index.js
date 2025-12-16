@@ -69,6 +69,15 @@ async function startServer() {
     // Connect to MongoDB
     await connectDB();
 
+    // Seed default admin user (if not exists)
+    try {
+      const seedAdmin = require("./scripts/seedAdmin");
+      await seedAdmin();
+    } catch (seedError) {
+      console.warn("Warning: Could not seed admin user:", seedError.message);
+      // Continue server startup even if seeding fails
+    }
+
     // Use routes
     app.use(userRoutes);
     app.use(donorRoutes);

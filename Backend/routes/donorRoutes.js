@@ -79,7 +79,8 @@ router.get("/find-donor", requireAuth, async (req, res) => {
 router.get("/get-donors", async (req, res) => {
   try {
     const { users } = getCollections();
-    const donors = await users.find({ role: "donor" }).toArray();
+    const donors = await users.find({}).toArray(); // REMOVED FILTER FOR DEBUGGING
+    console.log(`Found ${donors.length} donors with role: 'donor'`);
 
     // Remove passwords from response
     const donorsWithoutPasswords = donors.map(({ password, ...donor }) => donor);

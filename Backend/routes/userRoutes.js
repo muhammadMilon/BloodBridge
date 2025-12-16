@@ -8,6 +8,7 @@ const verifyAdmin = require("../middleware/verifyAdmin");
 const router = express.Router();
 
 // Login route
+// Login route
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -92,6 +93,66 @@ router.post("/login", async (req, res) => {
       message: "Internal server error",
     });
   }
+});
+
+// Social Login route (Handle Firebase login on backend)
+router.post("/social-login", async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const { users } = getCollections();
+        const user = await users.findOne({ email: email.toLowerCase().trim() });
+
+        if (!user) {
+            // User should be created by /add-user before calling this, or handle creation here.
+            // For now, assume creation is handled or return 404
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check active stats
+        if (user.status && user.status !== "active") {
+            return res.status(403).json({
+                 message: "Account is not active. Please contact support.",
+            });
+        }
+
+        // Create session
+        req.session.user = {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name || "",
+            image: user.image || "",
+            role: user.role || "donor",
+            status: user.status || "active",
+            bloodGroup: user.bloodGroup || "",
+            district: user.district || "",
+            upazila: user.upazila || "",
+            phone: user.phone || "",
+        };
+
+        // Update login stats
+        await users.updateOne(
+            { _id: user._id },
+            { $inc: { loginCount: 1 }, $set: { lastLogin: new Date().toISOString() } }
+        );
+
+        res.json({
+            message: "Social login successful",
+            user: {
+                 id: req.session.user.id,
+                 email: req.session.user.email,
+                 role: req.session.user.role,
+            }
+        });
+
+    } catch (error) {
+        console.error("Social login error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 // Set password (for users migrating from Firebase or setting initial password)
@@ -255,6 +316,7 @@ router.post("/add-user", async (req, res) => {
       password: hashedPassword, // Store hashed password
       role: userData.role || "donor",
       status: userData.status || "active",
+      gender: userData.gender || "male",
       bloodGroup: userData.bloodGroup || "",
       district: userData.district || "",
       upazila: userData.upazila || "",
@@ -369,6 +431,10 @@ router.patch("/update-user/:id", requireAuth, async (req, res) => {
       return res.status(403).json({
         message: "Forbidden: You can only update your own profile",
       });
+    }
+    // Allow gender updates
+    if (updatedData.gender) {
+      // No special handling needed, will be set below
     }
 
     // Hash password if it's being updated

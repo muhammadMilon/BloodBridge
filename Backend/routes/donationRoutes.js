@@ -23,7 +23,38 @@ router.get("/my-donation-request", requireAuth, async (req, res) => {
   try {
     const { donationRequest } = getCollections();
     const query = { requesterEmail: req.session.user.email };
-    const data = await donationRequest.find(query).toArray();
+
+    // Use aggregation to join with donorInfo collection
+    const data = await donationRequest
+      .aggregate([
+        {
+          $match: query,
+        },
+        // Convert string ID to ObjectId if needed for joining, 
+        // but looking at the code, donationId in donorInfo seems to be stored as string likely.
+        // Let's check how it's stored. The previous frontend code was passing donation._id
+        // to /find-donor?donationId=${donation._id}. 
+        // The donorRoutes.js finds by { donationId }. 
+        // Assuming donationId in donorInfo matches the string version of _id from donationRequest.
+        {
+          $lookup: {
+            from: "donorInfo", // Collection name for donorInfo
+            let: { donationId: { $toString: "$_id" } },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$donationId", "$$donationId"] } } }
+            ],
+            as: "donorDetails"
+          }
+        },
+        {
+          $unwind: {
+            path: "$donorDetails",
+            preserveNullAndEmptyArrays: true
+          }
+        }
+      ])
+      .toArray();
+
     res.json(data);
   } catch (error) {
     console.error("Get my donation requests error:", error);
@@ -61,7 +92,14 @@ router.get("/all-donation-requests-public", async (req, res) => {
 router.get("/details/:id", requireAuth, async (req, res) => {
   try {
     const { donationRequest } = getCollections();
-    const query = { _id: new ObjectId(req.params.id) };
+    const id = req.params.id;
+    // Handle both ObjectId and string IDs
+    let query;
+    if (ObjectId.isValid(id) && id.length === 24) {
+      query = { _id: new ObjectId(id) };
+    } else {
+      query = { _id: id };
+    }
     const data = await donationRequest.findOne(query);
     res.json(data);
   } catch (error) {
@@ -74,7 +112,14 @@ router.get("/details/:id", requireAuth, async (req, res) => {
 router.get("/get-donation-request/:ID", requireAuth, async (req, res) => {
   try {
     const { donationRequest } = getCollections();
-    const query = { _id: new ObjectId(req.params.ID) };
+    const id = req.params.ID;
+    // Handle both ObjectId and string IDs
+    let query;
+    if (ObjectId.isValid(id) && id.length === 24) {
+      query = { _id: new ObjectId(id) };
+    } else {
+      query = { _id: id };
+    }
     const data = await donationRequest.findOne(query);
     res.json(data);
   } catch (error) {
@@ -90,7 +135,13 @@ router.put("/update-donation-request/:ID", requireAuth, async (req, res) => {
     const { ID } = req.params;
     const updatedRequest = req.body;
 
-    const filter = { _id: new ObjectId(ID) };
+    // Handle both ObjectId and string IDs
+    let filter;
+    if (ObjectId.isValid(ID) && ID.length === 24) {
+      filter = { _id: new ObjectId(ID) };
+    } else {
+      filter = { _id: ID };
+    }
     const updateDoc = { $set: updatedRequest };
 
     const result = await donationRequest.updateOne(filter, updateDoc);
@@ -106,8 +157,17 @@ router.patch("/donation-status", requireAuth, async (req, res) => {
   try {
     const { donationRequest } = getCollections();
     const { id, donationStatus } = req.body;
+    
+    // Handle both ObjectId and string IDs
+    let filter;
+    if (ObjectId.isValid(id) && id.length === 24) {
+      filter = { _id: new ObjectId(id) };
+    } else {
+      filter = { _id: id };
+    }
+    
     const result = await donationRequest.updateOne(
-      { _id: new ObjectId(id) },
+      filter,
       { $set: { donationStatus } }
     );
     res.json(result);
@@ -123,11 +183,14 @@ router.delete("/delete-request/:id", async (req, res) => {
     const { donationRequest } = getCollections();
     const id = req.params.id;
 
-    if (!ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Invalid request ID" });
+    // Handle both ObjectId and string IDs
+    let query;
+    if (ObjectId.isValid(id) && id.length === 24) {
+      query = { _id: new ObjectId(id) };
+    } else {
+      query = { _id: id };
     }
-
-    const query = { _id: new ObjectId(id) };
+    
     const result = await donationRequest.deleteOne(query);
     res.json(result);
   } catch (error) {
