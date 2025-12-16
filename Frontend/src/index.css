@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Swiper CSS - Imported in components, but ensure dark mode compatibility */
+/* Swiper modules are available in Client/node_modules/swiper/modules */
+
 /* @plugin "daisyui"; */
 :root,
 .theme-light {

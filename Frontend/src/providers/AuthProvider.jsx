@@ -1,4 +1,6 @@
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { createContext, useEffect, useState } from "react";
+import { auth } from "../firebase/firebase.config";
 import useAxiosPublic from "../hooks/axiosPublic";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 
@@ -45,11 +47,17 @@ const AuthProvider = ({ children }) => {
   };
 
   const signIn = async (email, password) => {
-    const res = await axiosPublic.post("/login", { email, password });
-    if (res.data.user) {
+    try {
+      const res = await axiosPublic.post("/login", { email, password });
+      if (res.data.user) {
         setUser(res.data.user);
+      }
+      return res;
+    } catch (error) {
+      // Re-throw with better error message
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      throw new Error(errorMessage);
     }
-    return res;
   };
 
   const logOut = async () => {
@@ -74,11 +82,11 @@ const AuthProvider = ({ children }) => {
     return res;
   };
 
-  // Google Sign In - Removed for Session Auth migration as requested
-  // Implementing Google Auth with Session requires backend OAuth flow (Passport.js etc)
-  const googleSignIn = async () => {
-      console.warn("Google Sign In not implemented for Session Auth yet");
-      throw new Error("Google Sign In not available");
+  // Google Sign In
+  const googleSignIn = () => {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
   };
 
   const authInfo = {

@@ -142,7 +142,7 @@ const Sidebar = () => {
         </Link>
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg text-gray-700 hover:text-red-700 hover:bg-rose-50 transition-all duration-200"
+          className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-slate-800 transition-all duration-200"
         >
           <FaBars />
         </button>
@@ -158,7 +158,7 @@ const Sidebar = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen glass border-r border-rose-200 shadow-2xl z-[62] transform transition-all duration-300 flex flex-col backdrop-blur-xl ${
+        className={`fixed top-0 left-0 h-screen bg-slate-950 border-r border-slate-800 shadow-2xl z-[62] transform transition-all duration-300 flex flex-col backdrop-blur-xl ${
           isMobile
             ? isOpen
               ? "w-72 translate-x-0"
@@ -170,7 +170,7 @@ const Sidebar = () => {
       >
         <div className="flex-1 overflow-y-auto">
           {/* Desktop Logo & Toggle */}
-          <div className="hidden lg:flex items-center justify-between h-16 px-4 border-b border-border">
+          <div className="hidden lg:flex items-center justify-between h-16 px-4 border-b border-slate-800">
             <Link to={basePath} className="flex items-center space-x-3 group">
               <img
                 src={logoSrc}
@@ -179,7 +179,7 @@ const Sidebar = () => {
                 style={{ backgroundColor: 'transparent', mixBlendMode: 'normal' }}
               />
               <span
-                className={`font-black text-xl tracking-tight text-rose-950 transition-opacity duration-300 ${
+                className={`font-black text-xl tracking-tight text-gray-100 transition-opacity duration-300 ${
                   !isOpen && "opacity-0 hidden"
                 }`}
               >
@@ -188,32 +188,32 @@ const Sidebar = () => {
             </Link>
             <button
                onClick={toggleSidebar}
-               className={`p-2 rounded-lg text-rose-950 hover:bg-rose-100 transition-all duration-200 ${!isOpen && "mx-auto"}`}
+               className={`p-2 rounded-lg text-gray-300 hover:text-white hover:bg-slate-800 transition-all duration-200 ${!isOpen && "mx-auto"}`}
             >
                {isOpen ? <FaTimes /> : <FaBars />}
             </button>
           </div>
 
           {/* Mobile Header (Side Drawer Internal) */}
-          <div className="lg:hidden flex items-center justify-between h-16 px-4 border-b border-border">
+          <div className="lg:hidden flex items-center justify-between h-16 px-4 border-b border-slate-800">
             <Link
               to={basePath}
               className="flex items-center space-x-2"
               onClick={closeSidebarOnMobile}
             >
-                <img
-                  src={logoSrc}
-                  alt="BloodBridge logo"
-                  className="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(255,51,102,0.5)]"
-                  style={{ backgroundColor: 'transparent', mixBlendMode: 'normal' }}
-                />
+              <img
+                src={logoSrc}
+                alt="BloodBridge logo"
+                className="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(255,51,102,0.5)]"
+                style={{ backgroundColor: 'transparent', mixBlendMode: 'normal' }}
+              />
               <span className="font-black text-xl tracking-tight text-white">
                 BloodBridge
               </span>
             </Link>
             <button
               onClick={closeSidebarOnMobile}
-              className="p-2 rounded-lg text-gray-700 hover:text-red-700 hover:bg-rose-50 transition-all duration-200"
+              className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-slate-800 transition-all duration-200"
             >
               <FaTimes />
             </button>
@@ -222,12 +222,12 @@ const Sidebar = () => {
           {/* Section Label */}
           <div className="px-4 mt-6 mb-2">
             <div
-              className={`inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full ${
+              className={`inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-full border border-slate-700 ${
                 !isMobile && !isOpen ? "opacity-0 hidden" : ""
               }`}
             >
-              <span className="w-2 h-2 bg-rose-400 rounded-full animate-pulse"></span>
-              <p className="text-xs font-bold uppercase tracking-wider text-rose-100">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">
                 {role === "admin"
                   ? "Admin Panel"
                   : role === "donor"
@@ -252,14 +252,14 @@ const Sidebar = () => {
                 className={({ isActive }) =>
                   `group relative flex items-center gap-4 px-4 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 overflow-hidden ${
                     isActive
-                      ? "bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-md shadow-rose-200 scale-105"
-                      : "text-slate-600 hover:text-rose-700 hover:bg-rose-50/50 hover:scale-105"
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/50 scale-105"
+                      : "text-gray-300 hover:text-white hover:bg-slate-800 hover:scale-105"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <span className={`text-xl flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : "text-rose-500"}`}>
+                    <span className={`text-xl flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : "text-emerald-500"}`}>
                       {item.icon}
                     </span>
                     <span
@@ -277,12 +277,12 @@ const Sidebar = () => {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto pb-6 px-4 border-t border-border pt-4 space-y-3">
+        <footer className="mt-auto pb-6 px-4 border-t border-slate-800 pt-4 space-y-3">
           {role === "donor" && (
             <Link
               to="/donordashboard/create-donation-request"
               onClick={() => isMobile && setIsOpen(false)}
-              className={`group flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl hover:scale-105 ${
+              className={`group flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl hover:scale-105 ${
                 (!isMobile && !isOpen) ? "w-10 px-0 rounded-full" : "" 
               }`}
             >
@@ -295,9 +295,9 @@ const Sidebar = () => {
             onClick={() => isMobile && setIsOpen(false)}
             className={`group flex items-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
               (!isMobile && !isOpen) ? "justify-center" : "justify-start"
-            } text-slate-600 hover:text-rose-700 hover:bg-rose-50/50 hover:scale-105`}
+            } text-gray-300 hover:text-white hover:bg-slate-800 hover:scale-105`}
           >
-            <ArrowLeft className="text-lg flex-shrink-0 text-rose-500 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="text-lg flex-shrink-0 text-emerald-500 group-hover:-translate-x-1 transition-transform" />
             {(isMobile || isOpen) && (
               <span className="transition-opacity duration-300">
                 Back to Home

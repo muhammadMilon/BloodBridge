@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter } from "react-router";
 import RoleBasedProfile from "../components/RoleBasedProfile";
 import RoleBasedRedirect from "../components/RoleBasedRedirect";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -15,12 +15,13 @@ import CreateDonationRequest from "../pages/donorDashboard/CreateDonationRequest
 import DonationRequest from "../pages/donorDashboard/DonationRequest";
 import DonorDashboard from "../pages/donorDashboard/DonorDashboard";
 import DonorRegister from "../pages/DonorRegister";
-import RecipientRegister from "../pages/RecipientRegister";
 import Error from "../pages/Error";
+import ErrorPage from "../pages/ErrorPage";
 import HelpCenter from "../pages/HelpCenter";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import ReceiverDashboard from "../pages/receiverDashboard/ReceiverDashboard";
+import RecipientRegister from "../pages/RecipientRegister";
 import RegisterSelection from "../pages/RegisterSelection";
 import Request from "../pages/Request";
 import Search from "../pages/Search";
@@ -98,6 +99,11 @@ const mainRoutes = createBrowserRouter([
             <RoleBasedRedirect />
           </PrivateRoute>
         ),
+      },
+      // 404 Route
+      {
+        path: "*",
+        element: <ErrorPage />,
       },
     ],
   },

@@ -87,15 +87,15 @@ const ContentManagement = () => {
   });
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-4 py-8 bg-slate-950 min-h-screen">
       <PageTitle title={"Content Management"} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
           Content Management
         </h1>
-        <Link to="/dashboard/content-management/add-blog">
-          <button className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+        <Link to="/admindashboard/content-management/add-blog">
+          <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
             Add Blog
           </button>
         </Link>
@@ -103,13 +103,13 @@ const ContentManagement = () => {
 
       {/* Filter */}
       <div className="mb-6">
-        <label className="block font-medium mb-2 text-slate-700">
+        <label className="block font-medium mb-2 text-slate-300">
           Filter by Status
         </label>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="w-full max-w-xs border-2 border-rose-200 bg-white rounded-lg px-4 py-3 text-slate-700 focus:ring-2 focus:ring-rose-400 transition-all"
+          className="w-full max-w-xs border-2 border-slate-600 bg-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:ring-2 focus:ring-emerald-500 transition-all"
         >
           <option value="all">All Blogs</option>
           <option value="draft">Draft</option>
@@ -122,23 +122,23 @@ const ContentManagement = () => {
         {filteredBlogs.map((blog) => (
           <div
             key={blog._id}
-            className="glass p-5 rounded-2xl hover:scale-105 transition-transform duration-300"
+            className="bg-slate-800/50 backdrop-blur-sm p-5 rounded-2xl border border-slate-700 hover:scale-105 hover:shadow-2xl transition-all duration-300"
           >
             <img
               src={blog.thumbnail}
               alt={blog.title}
               className="h-48 w-full object-cover rounded-lg mb-4 shadow-md"
             />
-            <h2 className="text-lg font-bold mb-3 text-slate-800 line-clamp-2">
+            <h2 className="text-lg font-bold mb-3 text-slate-200 line-clamp-2">
               {blog.title}
             </h2>
             <div className="mb-4">
-              <span className="text-sm text-slate-600">Status: </span>
+              <span className="text-sm text-slate-400">Status: </span>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                   blog.status === "published"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700"
+                    ? "bg-green-900/50 text-green-400 border border-green-700"
+                    : "bg-yellow-900/50 text-yellow-400 border border-yellow-700"
                 }`}
               >
                 {blog.status}
@@ -158,7 +158,7 @@ const ContentManagement = () => {
                 ) : (
                   <button
                     onClick={() => handleStatusChange(blog._id, "draft")}
-                    className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                   >
                     Unpublish
                   </button>
@@ -166,7 +166,7 @@ const ContentManagement = () => {
 
                 <button
                   onClick={() => handleDeleteBlog(blog._id)}
-                  className="flex-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                 >
                   Delete
                 </button>

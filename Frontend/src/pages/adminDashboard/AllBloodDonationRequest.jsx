@@ -134,9 +134,9 @@ export default function AllBloodDonationRequest() {
       : donations.filter((d) => d.donationStatus === filterStatus);
 
   return (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 bg-slate-950 min-h-screen">
       <PageTitle title={"All Donation Request"} />
-      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
+      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
         All Donation Requests
       </h2>
 
@@ -148,8 +148,8 @@ export default function AllBloodDonationRequest() {
             onClick={() => setFilterStatus(status)}
             className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 ${
               filterStatus === status
-                ? "bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg"
+                : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -161,34 +161,34 @@ export default function AllBloodDonationRequest() {
       {loading ? (
         <Loader label="Loading requests..." />
       ) : filteredDonations.length === 0 ? (
-        <p className="text-center text-slate-600 py-8">
+        <p className="text-center text-slate-400 py-8">
           No donation requests found.
         </p>
       ) : (
-        <div className="glass p-4 sm:p-6 rounded-2xl">
+        <div className="bg-slate-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-2xl border border-slate-700">
           <div className="overflow-x-auto">
             <table className="w-full text-xs sm:text-sm min-w-[800px]">
-              <thead className="bg-gradient-to-r from-rose-50 to-red-50">
+              <thead className="bg-slate-700/50">
                 <tr>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Recipient
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Location
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Date & Time
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Blood Group
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Status
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Donor Info
                   </th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-700">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-slate-200">
                     Actions
                   </th>
                 </tr>
@@ -197,24 +197,24 @@ export default function AllBloodDonationRequest() {
                 {filteredDonations.map((donation, i) => (
                   <tr
                     key={donation._id}
-                    className={`border-b border-slate-200 hover:bg-rose-50/30 transition-colors ${
-                      i % 2 === 0 ? "bg-white" : "bg-rose-50/20"
+                    className={`border-b border-slate-700 hover:bg-slate-700/30 transition-colors ${
+                      i % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/50"
                     }`}
                   >
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 font-medium text-slate-800">
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 font-medium text-slate-200">
                       {donation.recipientName}
                     </td>
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-600">
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-400">
                       {donation.recipientDistrict}, {donation.recipientUpazila}
                     </td>
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-600">
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-400">
                       {donation.donationDate} <br />
                       <span className="text-xs opacity-75">
                         {donation.donationTime}
                       </span>
                     </td>
                     <td className="px-2 sm:px-4 py-2 sm:py-3">
-                      <span className="inline-block px-2 py-1 bg-rose-100 text-rose-700 rounded text-xs sm:text-sm font-medium">
+                      <span className="inline-block px-2 py-1 bg-emerald-900/50 text-emerald-400 border border-emerald-700 rounded text-xs sm:text-sm font-medium">
                         {donation.bloodGroup}
                       </span>
                     </td>
@@ -233,10 +233,10 @@ export default function AllBloodDonationRequest() {
                         {donation.donationStatus}
                       </span>
                     </td>
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-600">
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-slate-400">
                       {donors[donation._id] ? (
                         <>
-                          <div className="font-medium text-xs sm:text-sm">
+                          <div className="font-medium text-xs sm:text-sm text-slate-200">
                             {donors[donation._id].donorName}
                           </div>
                           <div className="text-xs opacity-75">
@@ -254,19 +254,19 @@ export default function AllBloodDonationRequest() {
                           <>
                             <Link
                               to={`/details/${donation._id}`}
-                              className="text-blue-600 hover:underline text-xs sm:text-sm font-medium"
+                              className="text-blue-400 hover:text-blue-300 hover:underline text-xs sm:text-sm font-medium"
                             >
                               View
                             </Link>
                             <Link
                               to={`/dashboard/update-donation-request/${donation._id}`}
-                              className="text-green-600 hover:underline text-xs sm:text-sm font-medium"
+                              className="text-emerald-400 hover:text-emerald-300 hover:underline text-xs sm:text-sm font-medium"
                             >
                               Edit
                             </Link>
                             <button
                               onClick={() => handleDelete(donation._id)}
-                              className="text-red-600 hover:underline text-xs sm:text-sm font-medium"
+                              className="text-orange-400 hover:text-orange-300 hover:underline text-xs sm:text-sm font-medium"
                             >
                               Delete
                             </button>

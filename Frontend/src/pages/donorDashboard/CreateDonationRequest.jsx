@@ -1,18 +1,32 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../providers/AuthProvider";
+import { useContext, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import useAxiosPublic from "../../hooks/axiosPublic";
-import useStatus from "../../hooks/useStatus";
+import { useLocation, useNavigate } from "react-router";
+import Loader from "../../components/Loader";
 import PageTitle from "../../components/PageTitle";
-import { useMemo } from "react";
+import useAxiosPublic from "../../hooks/axiosPublic";
+import useRole from "../../hooks/useRole";
+import useStatus from "../../hooks/useStatus";
+import { AuthContext } from "../../providers/AuthProvider";
 
 const CreateDonationRequest = () => {
   const axiosPublic = useAxiosPublic();
   const { status, loading } = useStatus();
-
-  console.log("🚀 ~ CreateDonationRequest ~ status:", status);
-
   const { user } = useContext(AuthContext);
+  const { role } = useRole();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Reset error on mount
+  useEffect(() => {
+    setError(null);
+  }, []);
+
+  // Show loader if user is not loaded yet
+  if (!user && !error) {
+    return <Loader label="Loading..." full={true} />;
+  }
 
   const [districts, setDistricts] = useState([]);
   const [upazilas, setUpazilas] = useState([]);
@@ -49,37 +63,65 @@ const CreateDonationRequest = () => {
     }
   }, [user]);
 
+  // Optimize: Load districts and upazilas in parallel
   useEffect(() => {
-    fetch("/districts.json")
-      .then((res) => res.json())
-      .then((data) => setDistricts(data))
-      .catch(() => toast.error("Failed to load districts"));
+    const loadLocationData = async () => {
+      try {
+        const [districtsRes, upazilasRes] = await Promise.all([
+          fetch("/districts.json").then(res => res.json()),
+          fetch("/upazilas.json").then(res => res.json())
+        ]);
+        setDistricts(districtsRes);
+        setUpazilas(upazilasRes);
+      } catch (err) {
+        console.error("Failed to load location data:", err);
+        toast.error("Failed to load location data");
+      }
+    };
+    loadLocationData();
   }, []);
 
+  // Fetch donors only once
   useEffect(() => {
-    fetch("/upazilas.json")
-      .then((res) => res.json())
-      .then((data) => setUpazilas(data))
-      .catch(() => toast.error("Failed to load upazilas"));
-  }, []);
+    let isMounted = true;
+    
+    const fetchDonors = async () => {
+      try {
+        const { data } = await axiosPublic.get("/get-donors");
+        if (isMounted) {
+          setDonors(data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching donors:", err);
+        if (isMounted) {
+          setDonors([]);
+        }
+      }
+    };
 
-  useEffect(() => {
-    axiosPublic
-      .get("/get-donors")
-      .then(({ data }) => setDonors(data || []))
-      .catch(() => setDonors([]));
+    fetchDonors();
+
+    return () => {
+      isMounted = false;
+    };
   }, [axiosPublic]);
 
+  // Filter upazilas based on selected district
   useEffect(() => {
-    if (formData.recipientDistrict) {
-      const filtered = upazilas.filter(
-        (u) => u.district_id === formData.recipientDistrict
-      );
-      setFilteredUpazilas(filtered);
+    if (formData.recipientDistrict && districts.length > 0 && upazilas.length > 0) {
+      const selectedDist = districts.find((d) => d.id === formData.recipientDistrict);
+      if (selectedDist) {
+        const filtered = upazilas.filter(
+          (u) => u.district_id === selectedDist.id
+        );
+        setFilteredUpazilas(filtered);
+      } else {
+        setFilteredUpazilas([]);
+      }
     } else {
       setFilteredUpazilas([]);
     }
-  }, [formData.recipientDistrict, upazilas]);
+  }, [formData.recipientDistrict, districts, upazilas]);
 
   const selectedDistrict = useMemo(
     () => districts.find((d) => d.id === formData.recipientDistrict),
@@ -126,10 +168,29 @@ const CreateDonationRequest = () => {
     }));
   };
 
+  // Determine redirect path based on role or current location
+  const getMyRequestsPath = () => {
+    if (location.pathname.includes('/donordashboard')) {
+      return '/donordashboard/my-donation-requests';
+    }
+    if (location.pathname.includes('/recipientdashboard')) {
+      return '/recipientdashboard/my-donation-requests';
+    }
+    if (role === 'donor') {
+      return '/donordashboard/my-donation-requests';
+    }
+    if (role === 'receiver') {
+      return '/recipientdashboard/my-donation-requests';
+    }
+    return '/dashboard';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) {
-      toast.loading("Checking user status, please wait...");
+    if (loading || submitting) {
+      if (loading) {
+        toast.loading("Checking user status, please wait...");
+      }
       return;
     }
     if (status === "blocked") {
@@ -138,10 +199,8 @@ const CreateDonationRequest = () => {
       );
       return;
     }
-    // const dataToSubmit = {
-    //   ...formData,
-    //   donationStatus: "pending",
-    // };
+    
+    setSubmitting(true);
     const dataToSubmit = {
       ...formData,
       recipientDistrict: selectedDistrict?.name || "",
@@ -169,37 +228,71 @@ const CreateDonationRequest = () => {
         "/create-donation-request",
         dataToSubmit
       );
-      toast.success("Donation request submitted successfully!");
-      console.log("Donation request submitted:", response.data);
-      // Optional: reset form here if you want
+      
+      if (response.data.insertedId || response.data.acknowledged) {
+        toast.success("Donation request submitted successfully!", {
+          duration: 2000,
+        });
+        // Navigate to requests page after a short delay
+        setTimeout(() => {
+          navigate(getMyRequestsPath());
+        }, 500);
+      } else {
+        toast.error("Request submitted but confirmation failed");
+      }
     } catch (error) {
-      toast.error("Failed to submit donation request");
       console.error("Error submitting donation request:", error);
+      toast.error(error.response?.data?.message || "Failed to submit donation request. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8 min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Error Loading Form</h2>
+          <p className="text-slate-400 mb-4">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              window.location.reload();
+            }}
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-8 min-h-screen bg-slate-950">
       <PageTitle title={"Create Donation Request"} />
-      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
+      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
         Create Donation Request
       </h2>
-      <form onSubmit={handleSubmit} className="glass p-8 rounded-2xl space-y-6">
+      <form onSubmit={handleSubmit} className="bg-slate-900/60 p-8 rounded-2xl space-y-6 border border-slate-800 backdrop-blur-sm">
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Requester Name
           </label>
           <input
             type="text"
             name="requesterName"
             value={formData.requesterName}
-            readOnly
-            className="w-full border-2 border-rose-200 p-3 rounded-lg bg-slate-50"
+            onChange={handleChange}
+            placeholder="Enter requester name"
+            className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
+            required
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Requester Email
           </label>
           <input
@@ -207,12 +300,12 @@ const CreateDonationRequest = () => {
             name="requesterEmail"
             value={formData.requesterEmail}
             readOnly
-            className="w-full border-2 border-rose-200 p-3 rounded-lg bg-slate-50"
+            className="w-full border-2 border-slate-700 p-3 rounded-lg bg-slate-800/70 text-slate-400"
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Recipient Name
           </label>
           <input
@@ -221,25 +314,25 @@ const CreateDonationRequest = () => {
             placeholder="Recipient Name"
             value={formData.recipientName}
             onChange={handleChange}
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               District
             </label>
             <select
               name="recipientDistrict"
               value={formData.recipientDistrict}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all"
               required
             >
               <option value="">Select District</option>
-              {districts.map((district) => (
+              {districts.sort((a, b) => a.name.localeCompare(b.name)).map((district) => (
                 <option key={district.id} value={district.id}>
                   {district.name}
                 </option>
@@ -248,18 +341,18 @@ const CreateDonationRequest = () => {
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Upazila
             </label>
             <select
               name="recipientUpazila"
               value={formData.recipientUpazila}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all"
               required
             >
               <option value="">Select Upazila</option>
-              {filteredUpazilas.map((upazila) => (
+              {filteredUpazilas.sort((a, b) => a.name.localeCompare(b.name)).map((upazila) => (
                 <option key={upazila.id} value={upazila.name}>
                   {upazila.name}
                 </option>
@@ -268,9 +361,8 @@ const CreateDonationRequest = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Urgency
             </label>
             <div className="flex gap-2">
@@ -281,10 +373,10 @@ const CreateDonationRequest = () => {
                   onClick={() =>
                     setFormData((prev) => ({ ...prev, urgencyLevel: level }))
                   }
-                  className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold border ${
+                  className={`flex-1 px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${
                     formData.urgencyLevel === level
-                      ? "bg-rose-600 text-white border-rose-600"
-                      : "border-rose-200 text-rose-600"
+                      ? "bg-emerald-600 text-white border-emerald-600"
+                      : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-emerald-600"
                   }`}
                 >
                   {level.toUpperCase()}
@@ -294,39 +386,30 @@ const CreateDonationRequest = () => {
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Units Needed
             </label>
             <input
               type="number"
               min="1"
+              max="10"
+              step="1"
               name="unitsNeeded"
-              value={formData.unitsNeeded}
-              onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-3 mt-6 md:mt-0">
-            <input
-              type="checkbox"
-              checked={formData.needsAmbulance}
-              onChange={(e) =>
+              value={formData.unitsNeeded || 1}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 1;
                 setFormData((prev) => ({
                   ...prev,
-                  needsAmbulance: e.target.checked,
-                }))
-              }
-              className="w-5 h-5 accent-rose-600"
+                  unitsNeeded: value >= 1 ? value : 1,
+                }));
+              }}
+            className="w-20 border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all"
+              required
             />
-            <span className="text-sm font-semibold text-slate-700">
-              Ambulance required
-            </span>
-          </div>
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Hospital Name
           </label>
           <input
@@ -335,13 +418,13 @@ const CreateDonationRequest = () => {
             placeholder="Hospital Name"
             value={formData.hospitalName}
             onChange={handleChange}
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
             required
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Full Address
           </label>
           <input
@@ -350,14 +433,14 @@ const CreateDonationRequest = () => {
             placeholder="Full Address"
             value={formData.fullAddress}
             onChange={handleChange}
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Hospital Contact Number
             </label>
             <input
@@ -365,12 +448,12 @@ const CreateDonationRequest = () => {
               name="hospitalPhone"
               value={formData.hospitalPhone}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
               placeholder="Hospital or emergency desk phone"
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Patient Condition
             </label>
             <input
@@ -378,21 +461,21 @@ const CreateDonationRequest = () => {
               name="patientCondition"
               value={formData.patientCondition}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
               placeholder="Eg. Thalassemia crisis, surgery, trauma..."
             />
           </div>
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Blood Group
           </label>
           <select
             name="bloodGroup"
             value={formData.bloodGroup}
             onChange={handleChange}
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-700 bg-slate-800/50 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/15 focus:border-rose-800 hover:border-slate-600 transition-all"
             required
           >
             <option value="">Select Blood Group</option>
@@ -409,7 +492,7 @@ const CreateDonationRequest = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Donation Date
             </label>
             <input
@@ -417,13 +500,13 @@ const CreateDonationRequest = () => {
               name="donationDate"
               value={formData.donationDate}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-slate-700">
+            <label className="block font-medium mb-2 text-slate-300">
               Donation Time
             </label>
             <input
@@ -431,14 +514,14 @@ const CreateDonationRequest = () => {
               name="donationTime"
               value={formData.donationTime}
               onChange={handleChange}
-              className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+              className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all"
               required
             />
           </div>
         </div>
 
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Request Message
           </label>
           <textarea
@@ -446,7 +529,7 @@ const CreateDonationRequest = () => {
             placeholder="Why do you need blood?"
             value={formData.requestMessage}
             onChange={handleChange}
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-700 bg-slate-800/70 text-white p-3 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-800 hover:border-slate-600 transition-all placeholder:text-slate-500"
             rows="4"
             required
           ></textarea>
@@ -454,29 +537,30 @@ const CreateDonationRequest = () => {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+          disabled={submitting || loading}
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
         >
-          Submit Request
+          {submitting ? "Submitting..." : "Submit Request"}
         </button>
       </form>
 
       {suggestedDonors.length > 0 && (
-        <div className="mt-8 glass p-6 rounded-2xl border border-rose-200">
-          <h3 className="text-xl font-bold text-slate-800 mb-4">
+        <div className="mt-8 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 backdrop-blur-sm">
+          <h3 className="text-xl font-bold text-white mb-4">
             AI-matched donors nearby
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {suggestedDonors.map((donor) => (
               <div
                 key={donor.email}
-                className="border border-rose-100 rounded-2xl p-4 bg-rose-50/60"
+                className="border border-slate-700 rounded-2xl p-4 bg-slate-800/50"
               >
-                <p className="font-semibold text-slate-800">{donor.name}</p>
-                <p className="text-sm text-slate-500">
+                <p className="font-semibold text-white">{donor.name}</p>
+                <p className="text-sm text-slate-400">
                   {donor.upazila}, {donor.district}
                 </p>
-                <p className="text-sm mt-2">
-                  Score: <span className="font-bold">{donor.score}</span>
+                <p className="text-sm mt-2 text-slate-300">
+                  Score: <span className="font-bold text-rose-800">{donor.score}</span>
                 </p>
                 <p className="text-xs text-slate-500">
                   Status: {donor.availabilityStatus || "available"}

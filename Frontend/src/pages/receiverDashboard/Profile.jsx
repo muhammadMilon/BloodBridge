@@ -4,13 +4,14 @@ import Swal from "sweetalert2";
 import PageTitle from "../../components/PageTitle";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { AuthContext } from "../../providers/AuthProvider";
+import { getAvatarUrl } from "../../utils/avatarHelper";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const [formData, setFormData] = useState({
     name: user?.displayName || "",
-    image: user?.photoURL || "",
+    gender: "male",
     district: "",
     upazila: "",
     bloodGroup: "",
@@ -32,7 +33,7 @@ export default function Profile() {
           setFormData(prev => ({
             ...prev,
             name: data.name || user.displayName || "",
-            image: data.image || user.photoURL || "",
+            gender: data.gender || "male",
             district: data.district || "",
             upazila: data.upazila || "",
             bloodGroup: data.bloodGroup || "",
@@ -78,6 +79,8 @@ export default function Profile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -110,67 +113,78 @@ export default function Profile() {
     <div className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto">
       <PageTitle title="Receiver Profile" />
       
-      <div className="glass border border-rose-100/50 rounded-2xl p-6 md:p-8 shadow-xl">
+      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-sm">
           <div className="flex flex-col items-center mb-8">
               <div className="relative">
                  <img 
-                    src={
-                        (formData.image && formData.image.startsWith("http")) 
-                        ? formData.image 
-                        : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                    } 
+                    src={dbUser?.image || dbUser?.photoURL || getAvatarUrl(dbUser?.gender || formData.gender)} 
                     onError={(e) => {
                         e.target.onerror = null; 
-                        e.target.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                        e.target.src = getAvatarUrl(dbUser?.gender || formData.gender);
                     }}
                     alt="Profile" 
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-slate-700 shadow-lg"
                   />
-                  <div className="absolute inset-0 rounded-full border border-rose-100/30"></div>
+                  <div className="absolute inset-0 rounded-full border border-slate-700/50"></div>
               </div>
-              <h2 className="text-2xl font-bold text-slate-800 mt-4">{formData.name}</h2>
-              <p className="text-slate-500">{user?.email}</p>
-              <span className="mt-2 px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-wider">
+              <h2 className="text-2xl font-bold text-white mt-4">{formData.name}</h2>
+              <p className="text-slate-400">{user?.email}</p>
+              <span className="mt-2 px-3 py-1 rounded-full bg-slate-800/50 text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-700">
                   {dbUser?.role || "receiver"}
               </span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
-              {/* Name */}
               <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Full Name</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/70 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 outline-none transition-all placeholder:text-slate-500"
                     placeholder="Enter your name"
                     required
                   />
               </div>
 
-              {/* Photo URL */}
+              {/* Gender */}
               <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Photo URL</label>
-                  <input
-                    type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
-                    placeholder="https://example.com/photo.jpg"
-                  />
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Gender</label>
+                  <div className="flex gap-6">
+                      <label className="flex items-center gap-2 text-white cursor-pointer">
+                          <input
+                              type="radio"
+                              name="gender"
+                              value="male"
+                              checked={formData.gender === "male"}
+                              onChange={handleChange}
+                              className="accent-emerald-600 w-4 h-4"
+                          />
+                          Male
+                      </label>
+                      <label className="flex items-center gap-2 text-white cursor-pointer">
+                          <input
+                              type="radio"
+                              name="gender"
+                              value="female"
+                              checked={formData.gender === "female"}
+                              onChange={handleChange}
+                              className="accent-emerald-600 w-4 h-4"
+                          />
+                          Female
+                      </label>
+                  </div>
               </div>
 
                {/* Blood Group - Read Only or Editable? Editable for now as per Donor demands */}
                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Group</label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Blood Group</label>
                   <select
                     name="bloodGroup"
                     value={formData.bloodGroup}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/50 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                   >
                       <option value="">Select Blood Group</option>
                       <option value="A+">A+</option>
@@ -187,15 +201,15 @@ export default function Profile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* District */}
                   <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">District</label>
+                      <label className="block text-sm font-semibold text-slate-300 mb-2">District</label>
                       <select
                         name="district"
                         value={formData.district}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all bg-white"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/50 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                       >
                           <option value="">Select District</option>
-                          {districts.map(d => (
+                          {districts.sort((a, b) => a.name.localeCompare(b.name)).map(d => (
                               <option key={d.id} value={d.name}>{d.name}</option>
                           ))}
                       </select>
@@ -203,16 +217,16 @@ export default function Profile() {
 
                   {/* Upazila */}
                   <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Upazila</label>
+                      <label className="block text-sm font-semibold text-slate-300 mb-2">Upazila</label>
                       <select
                         name="upazila"
                         value={formData.upazila}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all bg-white"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/70 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={!formData.district}
                       >
                           <option value="">Select Upazila</option>
-                          {filteredUpazilas.map(u => (
+                          {filteredUpazilas.sort((a, b) => a.name.localeCompare(b.name)).map(u => (
                               <option key={u.id} value={u.name}>{u.name}</option>
                           ))}
                       </select>
@@ -223,7 +237,7 @@ export default function Profile() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="w-full py-4 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                       {saving ? "Saving Changes..." : "Save Profile Changes"}
                   </button>

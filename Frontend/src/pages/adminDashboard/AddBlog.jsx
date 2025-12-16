@@ -35,7 +35,7 @@ const AddBlog = () => {
 
       if (res.data.insertedId || res.data.acknowledged) {
         toast.success("Blog created successfully as draft");
-        navigate("/dashboard/content-management");
+        navigate("/admindashboard/content-management");
       }
     } catch (err) {
       toast.error("Failed to create blog");
@@ -44,15 +44,15 @@ const AddBlog = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 bg-slate-950 min-h-screen">
       <PageTitle title={"Add Blog"} />
-      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
+      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
         Add New Blog
       </h2>
-      <form onSubmit={handleSubmit} className="glass p-8 rounded-2xl space-y-6">
+      <form onSubmit={handleSubmit} className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-2xl border border-slate-700 space-y-6">
         {/* Title input */}
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Blog Title
           </label>
           <input
@@ -63,14 +63,14 @@ const AddBlog = () => {
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-600 bg-slate-700 text-slate-200 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             required
           />
         </div>
 
         {/* Image URL input */}
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Thumbnail Image URL
           </label>
           <input
@@ -81,7 +81,7 @@ const AddBlog = () => {
             onChange={(e) =>
               setFormData({ ...formData, thumbnail: e.target.value })
             }
-            className="w-full border-2 border-rose-200 p-3 rounded-lg focus:ring-2 focus:ring-rose-400 transition-all"
+            className="w-full border-2 border-slate-600 bg-slate-700 text-slate-200 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             required
           />
         </div>
@@ -92,17 +92,17 @@ const AddBlog = () => {
             <img
               src={formData.thumbnail}
               alt="Thumbnail Preview"
-              className="max-w-xs h-auto rounded-lg shadow-md border-2 border-rose-200"
+              className="max-w-xs h-auto rounded-lg shadow-md border-2 border-slate-600"
             />
           </div>
         )}
 
         {/* Rich text editor for blog content */}
         <div>
-          <label className="block font-medium mb-2 text-slate-700">
+          <label className="block font-medium mb-2 text-slate-300">
             Blog Content
           </label>
-          <div className="border-2 border-rose-200 rounded-lg overflow-hidden">
+          <div className="border-2 border-slate-600 rounded-lg overflow-hidden">
             <JoditEditor
               ref={editor}
               value={formData.content}
@@ -116,7 +116,7 @@ const AddBlog = () => {
         {/* Submit button */}
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
         >
           Create Blog
         </button>

@@ -1,53 +1,58 @@
-import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../providers/AuthProvider";
-import { Link } from "react-router";
+import { useContext, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router";
 import Swal from "sweetalert2";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
-import useAxiosPublic from "../../hooks/axiosPublic";
-import PageTitle from "../../components/PageTitle";
 import Loader from "../../components/Loader";
+import PageTitle from "../../components/PageTitle";
+import useAxiosPublic from "../../hooks/axiosPublic";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { AuthContext } from "../../providers/AuthProvider";
 
 export default function DonationRequest() {
   const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const axiosPublic = useAxiosPublic();
+  const location = useLocation();
 
   const [donations, setDonations] = useState([]);
   const [donors, setDonors] = useState({});
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
 
+  // Fetch data when component mounts or location changes (ensures fresh data after navigation)
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-    axiosSecure
-      .get("/my-donation-request")
-      .then(async (res) => {
-        const donations = res.data;
-        setDonations(donations);
+    let isMounted = true;
 
-        const donorData = {};
-        await Promise.all(
-          donations.map(async (donation) => {
-            try {
-              const donorRes = await axiosSecure.get(
-                `/find-donor?donationId=${donation._id}`
-              );
-              if (donorRes.data.length > 0) {
-                donorData[donation._id] = donorRes.data[0];
-              }
-            } catch (err) {
-              console.error("Error fetching donor for donation:", donation._id);
-            }
-          })
-        );
-        setDonors(donorData);
-      })
-      .catch((err) => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosSecure.get("/my-donation-request");
+        if (isMounted) {
+          const donations = res.data || [];
+          setDonations(donations);
+        }
+      } catch (err) {
         console.error("Error fetching donation requests:", err);
-      })
-      .finally(() => setLoading(false));
-  }, [user]);
+        if (isMounted) {
+          setDonations([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, axiosSecure, location.pathname]); // Add location.pathname to refetch when navigating to this page
 
   const handleDelete = (id) => {
     Swal.fire({
@@ -122,23 +127,21 @@ export default function DonationRequest() {
       : donations.filter((d) => d.donationStatus === filterStatus);
 
   return (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 min-h-screen bg-slate-950">
       <PageTitle title={"My Donation Request"} />
-      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-rose-600 to-red-600 bg-clip-text text-transparent">
+      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
         My Donation Requests
       </h2>
 
-      {/* Filter Buttons */}
       <div className="flex flex-wrap justify-center gap-3 mb-8">
         {["all", "pending", "inprogress", "done", "canceled"].map((status) => (
           <button
             key={status}
             onClick={() => setFilterStatus(status)}
-            className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 ${
-              filterStatus === status
-                ? "bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
+            className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 ${filterStatus === status
+              ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg"
+              : "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700"
+              }`}
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </button>
@@ -149,34 +152,34 @@ export default function DonationRequest() {
       {loading ? (
         <Loader label="Loading your requests..." />
       ) : filteredDonations.length === 0 ? (
-        <p className="text-center text-slate-600 py-8">
+        <p className="text-center text-slate-400 py-8">
           No donation requests found.
         </p>
       ) : (
-        <div className="glass p-6 rounded-2xl">
+        <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 backdrop-blur-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gradient-to-r from-rose-50 to-red-50">
+              <thead className="bg-slate-800/50 border-b border-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Recipient
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Location
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Date & Time
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Blood Group
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Donor Info
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-slate-300">
                     Actions
                   </th>
                 </tr>
@@ -185,74 +188,72 @@ export default function DonationRequest() {
                 {filteredDonations.map((donation, i) => (
                   <tr
                     key={donation._id}
-                    className={`border-b border-slate-200 hover:bg-rose-50/30 transition-colors ${
-                      i % 2 === 0 ? "bg-white" : "bg-rose-50/20"
-                    }`}
+                    className={`border-b border-slate-800 hover:bg-slate-800/30 transition-colors ${i % 2 === 0 ? "bg-slate-900/20" : "bg-slate-900/40"
+                      }`}
                   >
-                    <td className="px-4 py-3 font-medium text-slate-800">
+                    <td className="px-4 py-3 font-medium text-white">
                       {donation.recipientName}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-400">
                       {donation.recipientDistrict}, {donation.recipientUpazila}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-400">
                       {donation.donationDate} <br />
                       <span className="text-xs opacity-75">
                         {donation.donationTime}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-1 bg-rose-100 text-rose-700 rounded text-sm font-medium">
+                      <span className="inline-block px-2 py-1 bg-emerald-900/50 text-emerald-400 rounded text-sm font-medium border border-emerald-800">
                         {donation.bloodGroup}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                          donation.donationStatus === "done"
-                            ? "bg-green-100 text-green-700"
-                            : donation.donationStatus === "inprogress"
-                            ? "bg-blue-100 text-blue-700"
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${donation.donationStatus === "done"
+                          ? "bg-emerald-900/50 text-emerald-400 border border-emerald-800"
+                          : donation.donationStatus === "inprogress"
+                            ? "bg-blue-900/50 text-blue-400 border border-blue-800"
                             : donation.donationStatus === "canceled"
-                            ? "bg-gray-100 text-gray-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
+                              ? "bg-gray-800 text-gray-400 border border-gray-700"
+                              : "bg-yellow-900/50 text-yellow-400 border border-yellow-800"
+                          }`}
                       >
                         {donation.donationStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {donors[donation._id] ? (
+                    <td className="px-4 py-3 text-slate-400">
+                      {donation.donorDetails ? (
                         <>
-                          <div className="font-medium">
-                            {donors[donation._id].donorName}
+                          <div className="font-medium text-white">
+                            {donation.donorDetails.donorName}
                           </div>
-                          <div className="text-xs text-gray-600">
-                            {donors[donation._id].donorEmail}
+                          <div className="text-xs text-slate-500">
+                            {donation.donorDetails.donorEmail}
                           </div>
                         </>
                       ) : (
-                        <span className="text-gray-400 italic">—</span>
+                        <span className="text-slate-600 italic">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/details/${donation._id}`}
-                          className="text-blue-600 hover:underline text-sm font-medium"
+                          className="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium"
                         >
                           View
                         </Link>
                         <Link
-                          to={`/dashboard/update-donation-request/${donation._id}`}
-                          className="text-green-600 hover:underline text-sm font-medium"
+                          to={`/donordashboard/update-donation-request/${donation._id}`}
+                          className="text-emerald-400 hover:text-emerald-300 hover:underline text-sm font-medium"
                         >
                           Edit
                         </Link>
 
                         <button
                           onClick={() => handleDelete(donation._id)}
-                          className="text-red-600 hover:underline text-sm font-medium"
+                          className="text-red-400 hover:text-red-300 hover:underline text-sm font-medium"
                         >
                           Delete
                         </button>
@@ -263,7 +264,7 @@ export default function DonationRequest() {
                               onClick={() =>
                                 handleStatusUpdate(donation._id, "done")
                               }
-                              className="text-green-600 hover:underline text-sm font-medium"
+                              className="text-emerald-400 hover:text-emerald-300 hover:underline text-sm font-medium"
                             >
                               Done
                             </button>
@@ -271,7 +272,7 @@ export default function DonationRequest() {
                               onClick={() =>
                                 handleStatusUpdate(donation._id, "canceled")
                               }
-                              className="text-yellow-600 hover:underline text-sm font-medium"
+                              className="text-yellow-400 hover:text-yellow-300 hover:underline text-sm font-medium"
                             >
                               Cancel
                             </button>
